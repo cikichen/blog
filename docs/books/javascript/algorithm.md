@@ -1,5 +1,5 @@
 ---
-sidebar: auto
+sidebar: heading
 ---
 
 # JavaScript数据结构和算法
@@ -240,7 +240,7 @@ for(let i = 0; i < numbers.length; i++) {
 | includes  | 如果数组中存在某个元素，则返回`true`，否则返回`false` |
 
 ## 栈
-栈是一种遵从后进先出(`LIFO`)原则的邮箱有序集合，新添加或待删除的元素都保存在栈的同一端，称之为栈顶，另一端叫栈底。
+栈是一种遵从后进先出(`LIFO`)原则的有序集合，新添加或待删除的元素都保存在栈的同一端，称之为栈顶，另一端叫栈底。
 
 ### 创建一个基于数组的栈结构
 在前面我们已经发现，数组因为有了`push()`和`pop()`方法，非常适合用来表示栈结构，因此我们将创建一个基于数组的类来表示栈：
@@ -287,7 +287,7 @@ class Stack {
 ```
 
 #### 使用Stack类
-在完善完`Stack`类以后，我们需要写一点代码来测试一下：
+在完善`Stack`类以后，我们需要写一点代码来测试一下：
 ```js
 const stack = new Stack()
 console.log(stack.isEmpty())  // true
@@ -339,14 +339,13 @@ class Stack {
     return this.count
   }
   isEmpty () {
-    return this.size() === 0
+    return this.count === 0
   }
   pop () {
     if (this.isEmpty()) {
       return undefined
     }
-    this.count--
-    const result = this.items[this.count]
+    const result = this.items[this.count--]
     delete this.items[this.count]
     return result
   }
@@ -361,11 +360,11 @@ class Stack {
     if (this.isEmpty()) {
       return ''
     }
-    let str = this.items['0']
+    let result = this.items['0']
     for(let i = 1; i < this.count; i++) {
-      str = `${str},${this.items[i]}`
+      result = `${result},${this.items[i]}`
     }
-    return str
+    return result
   }
 }
 ```
@@ -426,8 +425,16 @@ console.log(stack.isEmpty())  // true
 ### 用栈解决实际问题
 栈的实际应用非常广泛，在回溯问题中，它可以用来存储访问过的任务或路径、撤销等操作。
 
-#### 十进制到二进制
+#### 十进制转二进制
 **技巧**：要把十进制转换成二进制，我们可以将该十进制除以2并对商取整，直到结果为0。<br/>
+```js
+// 十进制10，转二进制案例
+// step1: 10 / 2 => 商5，余数0
+// step2: 5 / 2  => 商2，余数1
+// step3: 2 / 2  => 商1, 余数0
+// step4: 1 / 2  => 商0，余数1
+// result：使用栈结构(先进后出)，结果为：1010
+```
 
 使用`JavaScript`对象版的`Stack`：
 ```js
@@ -437,9 +444,9 @@ function decimalToBinary (decNumber) {
   let rem 
   let binaryString = ''
   while (number > 0) {
-    rem = Math.floor(number % 2)
+    rem = Math.floor(number % 2)    // 获取余数
+    number = Math.floor(number / 2) // 获取商
     stack.push(rem)
-    number = Math.floor(number / 2)
   }
   while (!stack.isEmpty()) {
     binaryString += stack.pop().toString()
@@ -469,21 +476,21 @@ console.log(decimalToBinary(1000))  // 1111101000
 随后根据栈结构后进先出的原则，我们将栈结构拼接在一起，就得到了十进制`10`转换为二进制后的结果，即：`1010`。
 
 #### 通用进制转换算法
-根据以上的思路，我们可以不仅可以把十进制转换为二进制，还可以把十进制转换成基数为`2~36`的任意进制。
+根据以上的思路，我们不仅可以把十进制转换为二进制，还可以把十进制转换成基数为`2~36`的任意进制。
 ```js
 function baseConverter (decNumber, base) {
+  if (base < 2 || base > 36) {
+    return ''
+  }
   const stack = new Stack()
   const digits = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   let number = decNumber
   let rem
   let baseString = ''
-  if (!(base >= 2 && base <= 36)) {
-    return ''
-  }
   while (number > 0) {
     rem = Math.floor(number % base)
-    stack.push(rem)
     number = Math.floor(number / base)
+    stack.push(rem)
   }
   while (!stack.isEmpty()) {
     baseString += digits[stack.pop()]
@@ -495,7 +502,11 @@ console.log(baseConverter(100, 8))  // 144
 console.log(baseConverter(100, 16)) // 64
 console.log(baseConverter(100, 32)) // 34
 ```
-代码分析：在将十进制转换为二进制时，余数为0或1；在将十进制转换八进制时，余数为`0~7`；在将十进制转换为十六进制时，余数为`0~9`+ `A、B、C、D、E、F`(分别对应10、11、12、13、14、15)。
+代码分析：
+* 在将十进制转换为二进制时，余数为0或1;
+* 在将十进制转换八进制时，余数为`0~7`；
+* 在将十进制转换为十六进制时，余数为`0~9,A(10),B(11),C(12),D(13),E(14),F(15)`。
+* 其它依次类推。
 
 ## 队列和双端队列
 队列是一种遵循先进先出(`FIFO`)原则的一组有序的项，队列在尾部添加新元素，并从顶部移除元素，而双端队列是一种将栈的原则和队列的原则混合在一起的数据结构。
@@ -590,9 +601,9 @@ console.log(queue.isEmpty())  // true
 ### 双端队列数据结构
 双端队列是一种允许我们同时从前端和后端添加和移除元素的特殊队列，在计算机科学中，双端队列的一个常见应用是存储一系列撤销操作，每当用户在软件中进行了一个操作，该操作被存在一个双端队列中，当用户点击撤销按钮时，该操作会被从双端队列中弹出，表示它被从后面移除了。在进行预先定义的一定数量的操作后，最新进行的操作会被从双端队列的前端移除。<br/>
 
-和之前一样，我们先声明一个`Deque`类：
+和之前一样，我们先声明一个`Dequeue`类：
 ```js
-class Deque {
+class Dequeue {
   constructor () {
     this.count = 0
     this.lowestCount = 0
@@ -609,7 +620,7 @@ class Deque {
 * `peekBack()`：返回双端队列后端的第一个元素。
 
 ```js
-class Deque {
+class Dequeue {
   constructor () {
     this.count = 0
     this.lowestCount = 0
@@ -637,21 +648,10 @@ class Deque {
     return strObj
   }
   addFront (element) {
-    // 1.添加之前没有数据
-    // 2.lowestCount > 0
-    // 3.lowestCount = 0
     if (this.isEmpty()) {
       this.addBack(element)
-    } else if (this.lowestCount > 0) {
-      this.lowestCount--
-      this.items[this.lowestCount] = element
     } else {
-      for (let i = this.count; i > 0; i--) {
-        this.items[i] = this.items[i - 1]
-      }
-      this.count++
-      this.lowestCount = 0
-      this.items[0] = element
+      this.items[--this.lowestCount] = element
     }
   }
   addBack (element) {
@@ -698,22 +698,22 @@ class Deque {
 
 在撰写完双端队里的实现代码后，我们需要写一点代码来测试:
 ```js
-const deque = new Deque()
-console.log(deque.isEmpty())  // true
-deque.addBack('AAA')
-deque.addBack('BBB')
-console.log(deque.toString()) // AAA,BBB
-deque.addBack('CCC')
-console.log(deque.toString()) // AAA,BBB,CCC
-console.log(deque.size())     // 3
-deque.removeFront() 
-console.log(deque.toString()) // BBB,CCC
-deque.removeBack()
-console.log(deque.toString()) // BBB
-deque.addFront('DDD')
-console.log(deque.peekFront())// DDD
-console.log(deque.peekBack()) // BBB
-console.log(deque.toString()) // DDD,BBB
+const dequeue = new Dequeue()
+console.log(dequeue.isEmpty())  // true
+dequeue.addBack('AAA')
+dequeue.addBack('BBB')
+console.log(dequeue.toString()) // AAA,BBB
+dequeue.addBack('CCC')
+console.log(dequeue.toString()) // AAA,BBB,CCC
+console.log(dequeue.size())     // 3
+dequeue.removeFront() 
+console.log(dequeue.toString()) // BBB,CCC
+dequeue.removeBack()
+console.log(dequeue.toString()) // BBB
+dequeue.addFront('DDD')
+console.log(dequeue.peekFront())// DDD
+console.log(dequeue.peekBack()) // BBB
+console.log(dequeue.toString()) // DDD,BBB
 ```
 
 ### 使用队列和双端队列解决实际问题
@@ -724,7 +724,7 @@ console.log(deque.toString()) // DDD,BBB
 ```js
 function hotPotato (elementList, num) {
   const queue = new Queue()
-  const elimitatedList = []
+  const eliminatedList = []
   for (let i = 0; i < elementList.length; i++) {
     queue.enqueue(elementList[i])
   }
@@ -732,10 +732,10 @@ function hotPotato (elementList, num) {
     for (let i = 0; i < num; i++) {
       queue.enqueue(queue.dequeue())
     }
-    elimitatedList.push(queue.dequeue())
+    eliminatedList.push(queue.dequeue())
   }
   return {
-    elimitated: elimitatedList,
+    eliminated: eliminatedList,
     winner: queue.dequeue()
   }
 }
@@ -752,8 +752,8 @@ function hotPotato (elementList, num) {
 ```js
 const names = ['AAA', 'BBB', 'CCC', 'DDD', 'EEE']
 const result = hotPotato(names, 7)
-for (let i = 0; i < result.elimitated.length; i++) {
-  console.log(`${result.elimitated[i]}在击鼓传花游戏中被淘汰。`)
+for (let i = 0; i < result.eliminated.length; i++) {
+  console.log(`${result.eliminated[i]}在击鼓传花游戏中被淘汰。`)
 }
 console.log(`胜利者：${result.winner}`)
 // CCC在击鼓传花游戏中被淘汰。
@@ -773,16 +773,17 @@ function palindromeChecker (str) {
   if (str === undefined || str === null || (str !== null && str.length === 0)) {
     return false
   }
-  const deque = new Deque()
-  const lowerStr = str.toLowerCase().split('').join('')
+  const dequeue = new Dequeue()
+  // 转换为小写，并移除所有空格
+  const lowerStr = str.toLowerCase().replace(/\s/g, '')
   let isEqual = true
   let firstChar, lastChar
   for (let i = 0; i < lowerStr.length; i++) {
-    deque.addBack(lowerStr.charAt(i))
+    dequeue.addBack(lowerStr.charAt(i))
   }
-  while (deque.size() > 1 && isEqual) {
-    firstChar = deque.removeFront()
-    lastChar = deque.removeBack()
+  while (dequeue.size() > 1 && isEqual) {
+    firstChar = dequeue.removeFront()
+    lastChar = dequeue.removeBack()
     if (firstChar !== lastChar) {
       isEqual = false
     }
@@ -792,7 +793,7 @@ function palindromeChecker (str) {
 ```
 代码分析：
 1. 在我们检查是否回文之前，需要先对传入的字符串做一些校验，如果传递的是`undefined`，`null`或者空字符串直接返回`false`。
-2. 随后我们实例化了一个我们在之前写好的双端队列`Deque`类。
+2. 随后我们实例化了一个我们在之前写好的双端队列`Dequeue`类。
 3. 为了避免字符串大小写的问题，我们统一把传入的字符串转换成小写的形式。
 4. 遍历字符串，并把字符串中的每一个字符依次添加到双端队列的末尾。
 5. 循环在双端队列的前端和后端移除一个元素，并比较这两个元素，如果相等则进行下一次循环，如果不相等则结束循环。
@@ -826,7 +827,7 @@ class LinkedList {
 代码分析：
 * `count`：我们使用`count`来记录链表中的总数。
 * `head`：由于链表数据结构是动态的，因此我们需要将第一个元素的引用保存下来。
-* `equalsFn()`：如果我们要在链表中遍历，判断当前节点是否是我们需要的节点，而链表中的节点不仅仅是值类型还可能是引用类型，因此需要我们提供一个比较方法，当没有这个方法的时候我们则使用默认的`defaultEquals()`方法，因为它可能会在其它数据结构中也使用到，因此我们把它提取到`utils.js`文件中：
+* `equalsFn()`：如果我们要在链表中遍历，判断当前节点是否是我们需要的节点，而链表中的节点不仅仅是值类型还可能是引用类型，因此需要我们提供一个比较方法，当没有这个方法的时候则使用默认的`defaultEquals()`方法，因为它可能会在其它数据结构中也使用到，所以我们把它提取到`utils.js`文件中：
 ```js
 // utils.js
 function defaultEquals (a, b) {
@@ -849,11 +850,11 @@ class Node {
 
 在搭建好`LinkedList`类的骨架后，我们需要实现一些方法，如下：
 * `push(element)`：向链表尾部添加一个新元素。
-* `insert(element,position)`：在链表指定位置插入一个新元素。
+* `insert(element,index)`：在链表指定位置插入一个新元素。
 * `getElementAt(index)`：返回链表中特定位置的元素，如果没有则返回`undefined`。
 * `remove(element)`：从链表中移除一个元素。
 * `indexOf(element)`：返回元素在链表中的索引，如果没有则返回`-1`。
-* `removeAt(position)`：从链表指定位置移除一个元素。
+* `removeAt(index)`：从链表指定位置移除一个元素。
 * `isEmpty()`：如果链表中不包含任何元素，则返回`true`，否则返回`false`。
 * `size()`：返回链表包含的元素个数。
 * `getHead()`：返回链表的第一个元素。
@@ -895,7 +896,7 @@ getElementAt (index) {
   return undefined
 }
 ```
-代码分析：为了保证我们能够迭代链表直到找到一个合法的位置，因此我们需要对传入的`index`参数进行合法性验证，然后迭代整个链表直到我们需要的位置位置。
+代码分析：为了保证我们能够迭代链表直到找到一个合法的位置，因此我们需要对传入的`index`参数进行合法性验证，然后迭代整个链表直到需要的位置。
 
 #### 从链表中移除指定位置元素
 从链表中移除元素由两种场景：第一种是移除第一个元素，第二种是移除第一个元素之外的其它元素。
@@ -943,7 +944,7 @@ insert (element, index) {
 ```
 代码分析：
 * 与`removeAt()`方法类似，我们需要判断参数`index`是否合法，不合法则直接返回`false`。
-* 与`removeAt()`直接跳过`current`不同的时，`insert`时需要我们先将`previous`和`node`链接起来，既：`node.next = current`，随后再将`previous`和`node`链接起来，既：`previous.next=node`。
+* 与`removeAt()`直接跳过`current`不同的是，`insert`时需要我们先将`previous`和`node`链接起来，既：`node.next = current`，随后再将`previous`和`node`链接起来，既：`previous.next=node`。
 
 
 #### 返回一个元素的位置
@@ -962,14 +963,14 @@ indexOf (element) {
 ```
 
 #### 从链表中移除元素
-`remove()`方法区别于`removeAt()`方法，对于前者而言我们并不知道改在什么地方移除，因此需要遍历一次链表以得到具体的索引位置，而对于后者而言由于接受的参数就是`index`，所以比`remove()`方法要简单一些，由于我们在上面已经实现了`indexOf()`方法和`removeAt()`方法，因此我们可以直接借用它们：
+`remove()`方法区别于`removeAt()`方法，对于前者而言我们并不知道该在什么地方移除，因此需要遍历一次链表以得到具体的索引位置，而对于后者而言由于接受的参数就是`index`，所以比`remove()`方法要简单一些，由于我们在上面已经实现了`indexOf()`方法和`removeAt()`方法，因此可以直接借用它们：
 ```js
 remove (element) {
   let index = this.indexOf(element)
   return this.removeAt(index)
 }
 ```
-注意：我们并不关心`index`是否为-1，因为在`removeAt()`方法中已经检查了`index`参数的合法性，因此这里并不需要额外判断`index`等于-1的情况。
+注意：我们并不关心`index`是否为-1，因为在`removeAt()`方法中已经检查了`index`参数的合法性，所以这里并不需要额外判断`index`等于-1的情况。
 
 
 #### 链表剩余方法
@@ -985,14 +986,15 @@ getHead () {
   return this.head === null ? undefined : this.head.element
 }
 toString () {
-  if (this.count === 0) {
+  if (this.isEmpty()) {
     return ''
   }
-  let str = `${this.head.element}`
-  let current = this.head.next
-  for (let index = 1; index < this.count && current != null; index++) {
-    str = `${str},${current.element}`
+  let str = this.head.element
+  let current = this.head
+  
+  while(current.next !== null) {
     current = current.next
+    str = `${str},${current.element}`
   }
   return str
 }
@@ -1016,7 +1018,7 @@ console.log(linkedList.indexOf(5))      // 3
 console.log(linkedList.indexOf(8))      // -1
 console.log(linkedList.insert(9, 1))    // true
 console.log(linkedList.toString())      // 1,9,3,2,5
-console.log(linkedList.remove(2))       // true
+console.log(linkedList.remove(2))       // 2
 console.log(linkedList.toString())      // 1,9,3,5
 console.log(linkedList.removeAt(2))     // 3
 console.log(linkedList.toString())      // 1,9,5
@@ -1106,7 +1108,7 @@ removeAt (index) {
       this.tail = current.prev
       this.tail.next = null
     } else {
-      current = this.getElementAt(index - 1)
+      current = this.getElementAt(index)
       const previous = current.prev
       previous.next = current.next
       current.next.prev = previous
@@ -1124,7 +1126,7 @@ removeAt (index) {
 
 
 #### 在双向链表尾部添加新元素
-在双向链表的尾部添加新元素同样和普通(单向)链表非常相似，却别任然是我们需要多维护一个`tail`指针。
+在双向链表的尾部添加新元素同样和普通(单向)链表非常相似，区别任然是我们需要多维护一个`tail`指针。
 ```js
 push (element) {
   const node = new DoublyNode(element)
@@ -1141,7 +1143,7 @@ push (element) {
 ```
 
 #### 其它方法
-除了以上几种方法，我们还需要为双线链表重写一下几种方法：
+除了以上几种方法，我们还需要为双向链表重写以下几种方法：
 ```js
 clear () {
   super.clear()
@@ -1216,7 +1218,7 @@ insert (element, index) {
         node.next = this.head
       } else {
         node.next = current
-        current = this.getElementAt(this.count)
+        current = this.getElementAt(this.count - 1)
         current.next = node
         this.head = node
       }
@@ -1242,7 +1244,7 @@ removeAt (index) {
   if (index >= 0 && index < this.count) {
     let current = this.head
     if (index === 0) {
-      if (this.count === 0) {
+      if (this.count === 1) {
         this.head = null
       } else {
         const removed = this.head
@@ -1254,7 +1256,7 @@ removeAt (index) {
     } else {
       const previous = this.getElementAt(index - 1)
       current = previous.next
-      previous.next = previous.next
+      previous.next = current.next
     }
     this.count--
     return current.element

@@ -1,137 +1,99 @@
-const nav = require('./utils/nav.js')
-const { ua }  = require('./ua.js')
-const { webpackSidebar, vueAnalysisSidebar, vueNextAnalysisSidebar } = nav
-module.exports = {
+import { registerComponentsPlugin } from '@vuepress/plugin-register-components'
+import { commentPlugin } from '@vuepress/plugin-comment'
+import { getDirname, path } from '@vuepress/utils'
+import { viteBundler } from '@vuepress/bundler-vite'
+import { defineUserConfig } from 'vuepress'
+import { defaultTheme } from '@vuepress/theme-default'
+import { baiduAnalyticsPlugin } from '@vuepress/plugin-baidu-analytics'
+import { markdownMathPlugin } from '@vuepress/plugin-markdown-math'
+import { prismjsPlugin } from '@vuepress/plugin-prismjs'
+
+
+import frontEndNav from './navbar/frontend.js'
+import vueAnalysisNav from './navbar/vueAnalysis.js'
+import algorithmNav from './navbar/algorithm.js'
+import booksNav from './navbar/books.js'
+import pythonNav from './navbar/python.js'
+import llmNav from './navbar/llm.js'
+
+import webpackSidebar from './sidebar/webpack.js'
+import rollupSidebar from './sidebar/rollup.js'
+import vueAnalysisSidebar from './sidebar/vueAnalysis.js'
+import vueNextAnalysisSidebar from './sidebar/vueNextAnalysis.js'
+import algorithmSidebar from './sidebar/algorithm.js'
+import leetCodeSidebar from './sidebar/leetcode.js'
+import ragSidebar from './sidebar/rag.js'
+import agentSidebar from './sidebar/agent.js'
+
+const __dirname = getDirname(import.meta.url)
+
+export default defineUserConfig({
   title: '汪图南',
   description: '汪图南的个人博客',
   base: '/blog/',
+  lang: 'zh-CN',
   head: [
-    ['link', { rel: 'icon', href: '/icon.png' }],
-    [...ua]
+    ['link', { rel: 'icon', href: '/blog/icon.png' }],
   ],
   port: 3000,
-  markdown: {
-    lineNumbers: false
-  },
-  themeConfig: {
-    lastUpdated: '最后更新时间',
-    sidebar: 'auto',
+  theme: defaultTheme({
+    editLink: false,
+    contributorsText: '贡献者',
+    lastUpdatedText: '最后更新时间',
     repo: 'https://github.com/wangtunan/blog',
     repoLabel: 'Github',
-    nav: [
-      {
-        text: '前端面试之道',
-        link: '/interview/'
-      },
-      {
-        text: '前端书籍',
-        items: [
-          {
-            text: 'JavaScript书籍',
-            items: [
-              {
-                text: '你不知道的JavaScript(上)',
-                link: '/books/javascript/know-up'
-              },
-              {
-                text: '你不知道的JavaScript(中下)',
-                link: '/books/javascript/know-down'
-              },
-              {
-                text: 'JavaScript数据结构和算法',
-                link: '/books/javascript/algorithm'
-              },
-              {
-                text: 'JavaScript设计模式与开发实践',
-                link: '/designPattern/'
-              },
-              {
-                text: '深入理解ES6',
-                link: '/books/javascript/es6'
-              }
-            ]
-          },
-          {
-            text: 'Git书籍',
-            items: [
-              {
-                text: '精通Git',
-                link: '/books/git/'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        text: 'Vue源码分析',
-        items: [
-          { text: 'Vue2.0源码分析', link: '/vueAnalysis/introduction/' },
-          { text: 'Vue3.0源码分析', link: '/vueNextAnalysis/introduction/' }
-        ]
-      },
-      {
-        text: '自动化测试',
-        items: [
-          { text: 'Vue应用测试', link: '/test/vueTest' }
-        ]
-      },
-      {
-        text: '打包工具',
-        items: [
-          {
-            text: 'Webpack',
-            link: '/webpack/webpack/'
-          },
-          {
-            text: 'Rollup',
-            link: '/rollup/'
-          }
-        ]
-      },
-      {
-        text: 'TypeScript',
-        items: [
-          {
-            text: 'TypeScript基础',
-            link: '/typescript/base'
-          },
-          {
-            text: 'TypeScript类型挑战',
-            link: '/typescript/challenge'
-          }
-        ]
-      },
-      {
-        text: 'CSS预编译器',
-        items: [
-          {
-            text: 'SASS',
-            link: '/cssPrecompiler/sass/'
-          },
-          {
-            text: 'Sass-Loader源码分析',
-            link: '/cssPrecompiler/sassLoader/'
-          }
-        ]
-      },
-      {
-        text: 'VuePress',
-        link: '/vuepress/'
-      }
+    navbar: [
+      ...llmNav,
+      ...pythonNav,
+      ...frontEndNav,
+      ...vueAnalysisNav,
+      ...algorithmNav,
+      ...booksNav
     ],
     sidebar: {
-      '/webpack/webpack/': [webpackSidebar],
+      '/webpack/webpack/': webpackSidebar,
+      '/rollup/': rollupSidebar,
       '/vueAnalysis/': vueAnalysisSidebar,
-      '/vueNextAnalysis/': vueNextAnalysisSidebar
+      '/vueNextAnalysis/': vueNextAnalysisSidebar,
+      '/algorithm/base/': algorithmSidebar,
+      '/algorithm/leetcode/': leetCodeSidebar,
+      '/rag/': ragSidebar,
+      '/agent/': agentSidebar
     }
-  },
-  configureWebpack: {
-    resolve: {
-      alias: {
-        '@images': '../images',
-        '@vuepress': '../images/vuepress',
-        '@components': '../.vuepress/components'
+  }),
+  bundler: viteBundler({
+    viteOptions: {
+      resolve: {
+        alias: {
+          '@images': path.resolve(__dirname, '../images')
+        }
+      },
+      ssr: {
+        noExternal: ["vuepress-shared"],
       }
     }
-  }
-}
+  }),
+  plugins: [
+    baiduAnalyticsPlugin({
+      id: '1876f64fd31c9aba1a7a5e157813a075'
+    }),
+    registerComponentsPlugin({
+      componentsDir: path.resolve(__dirname, './components')
+    }),
+    commentPlugin({
+      provider: "Giscus",
+      repo: 'wangtunan/blog',
+      repoId: 'MDEwOlJlcG9zaXRvcnkxNzcyMzkwNDg=',
+      category: 'Announcements',
+      categoryId: 'DIC_kwDOCpB0CM4CZkha',
+      mapping: "pathname",
+      lang: 'zh-CN'
+    }),
+    markdownMathPlugin({
+      type: 'katex',
+    }),
+    prismjsPlugin({
+      lineNumbers: false
+    })
+  ]
+})
